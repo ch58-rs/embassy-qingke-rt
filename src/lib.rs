@@ -17,11 +17,11 @@ use core::arch::global_asm;
 mod asm;
 
 // Let this crate conflicts with riscv-rt
-#[export_name = "error: riscv-rt appears more than once in the dependency graph"]
+#[unsafe(export_name = "error: riscv-rt appears more than once in the dependency graph")]
 #[doc(hidden)]
 pub static __ONCE__: () = ();
 
-extern "C" {
+unsafe extern "C" {
     fn Exception();
 
     fn InstructionMisaligned();
@@ -41,8 +41,8 @@ extern "C" {
 }
 
 #[doc(hidden)]
-#[no_mangle]
-#[link_section = ".vector_table.exceptions"]
+#[unsafe(no_mangle)]
+#[unsafe(link_section = ".vector_table.exceptions")]
 pub static __EXCEPTIONS: [Option<unsafe extern "C" fn()>; 12] = [
     Some(InstructionMisaligned), // 0
     Some(InstructionFault),
@@ -88,9 +88,9 @@ impl CoreInterrupt {
 
 /// Core interrupts, without the first one
 #[doc(hidden)]
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[used]
-#[link_section = ".vector_table.core_interrupts"]
+#[unsafe(link_section = ".vector_table.core_interrupts")]
 pub static __CORE_INTERRUPTS: [Option<unsafe extern "C" fn()>; 15] = [
     // None, // skip 0
     None,
@@ -111,9 +111,8 @@ pub static __CORE_INTERRUPTS: [Option<unsafe extern "C" fn()>; 15] = [
 ];
 // followed by .vector_table.external_interrupts
 
-#[no_mangle]
-#[link_section = ".init.rust"]
-#[export_name = "_setup_interrupts"]
+#[unsafe(link_section = ".init.rust")]
+#[unsafe(export_name = "_setup_interrupts")]
 unsafe extern "C" fn qingke_setup_interrupts() {
     // enable hardware stack push
     // intsyscr(0x804): Open nested interrupts and hardware stack functions
@@ -134,7 +133,7 @@ unsafe extern "C" fn qingke_setup_interrupts() {
     // Qingke V2A, V2C
     // (does not have user mode)
     #[cfg(feature = "v2")]
-    {
+    unsafe {
         core::arch::asm!(
             "
             li t0, 0x1880
@@ -147,7 +146,7 @@ unsafe extern "C" fn qingke_setup_interrupts() {
 
     // Qingke V3A
     #[cfg(feature = "v3")]
-    {
+    unsafe {
         #[cfg(feature = "u-mode")]
         core::arch::asm!(
             "
@@ -170,7 +169,7 @@ unsafe extern "C" fn qingke_setup_interrupts() {
         feature = "v4",
         not(any(feature = "v2", feature = "v3", feature = "v4"))     // Fallback condition
     ))]
-    {
+    unsafe {
         #[cfg(feature = "u-mode")]
         core::arch::asm!(
             "
@@ -198,17 +197,19 @@ unsafe extern "C" fn qingke_setup_interrupts() {
 
     // Qingke V2's mtvec must be 1KB aligned.
 
-    #[cfg(feature = "highcode")]
-    mtvec::write(0x20000000, TrapMode::VectoredAddress);
+    unsafe {
+        #[cfg(feature = "highcode")]
+        mtvec::write(0x20000000, TrapMode::VectoredAddress);
 
-    #[cfg(not(feature = "highcode"))]
-    mtvec::write(0x00000000, TrapMode::VectoredAddress);
+        #[cfg(not(feature = "highcode"))]
+        mtvec::write(0x00000000, TrapMode::VectoredAddress);
 
-    qingke::pfic::wfi_to_wfe(true);
+        qingke::pfic::wfi_to_wfe(true);
+    }
 }
 
 #[doc(hidden)]
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 pub fn DefaultInterruptHandler() {
     loop {
@@ -219,7 +220,7 @@ pub fn DefaultInterruptHandler() {
 }
 
 #[doc(hidden)]
-#[no_mangle]
+#[unsafe(no_mangle)]
 #[allow(non_snake_case)]
 pub fn DefaultExceptionHandler() -> ! {
     loop {
@@ -245,11 +246,11 @@ global_asm!(
 );
 
 #[doc(hidden)]
-#[link_section = ".trap.rust"]
-#[export_name = "_exception_handler_rust"]
+#[unsafe(link_section = ".trap.rust")]
+#[unsafe(export_name = "_exception_handler_rust")]
 pub unsafe extern "C" fn qingke_exception_handler() {
     // jump according to the __EXCEPTIONS table
-    extern "C" {
+    unsafe extern "C" {
         fn ExceptionHandler();
     }
 
@@ -260,12 +261,12 @@ pub unsafe extern "C" fn qingke_exception_handler() {
         if code < __EXCEPTIONS.len() {
             let h = &__EXCEPTIONS[code];
             if let Some(handler) = h {
-                handler();
+                unsafe { handler() };
             } else {
-                ExceptionHandler();
+                unsafe { ExceptionHandler() };
             }
         } else {
-            ExceptionHandler();
+            unsafe { ExceptionHandler() };
         }
     } else {
         loop {

@@ -144,7 +144,7 @@ unsafe extern "C" fn qingke_setup_interrupts() {
         );
     }
 
-    // Qingke V3A
+    // Generic Qingke V3A. CH585 V3C has a distinct startup block below.
     #[cfg(feature = "v3")]
     unsafe {
         #[cfg(feature = "u-mode")]
@@ -163,11 +163,34 @@ unsafe extern "C" fn qingke_setup_interrupts() {
         );
     }
 
+    // CH585 QingKe V3C startup: configure the pipeline and prediction,
+    // nested interrupts and hardware stack, and user-mode entry.
+    #[cfg(feature = "ch585-v3c")]
+    unsafe {
+        core::arch::asm!(
+            "
+            li t0, 0x25
+            csrw 0xbc0, t0
+            li t0, 0x3
+            csrw 0x804, t0
+            li t0, 0x1
+            csrw 0xbc1, t0
+            li t0, 0x88
+            csrw mstatus, t0
+            "
+        );
+    }
+
     // corecfgr(0xbc0): 流水线控制位 & 动态预测控制位
     // corecfgr(0xbc0): Pipeline control bit & Dynamic prediction control
     #[cfg(any(
-        feature = "v4",
-        not(any(feature = "v2", feature = "v3", feature = "v4"))     // Fallback condition
+        all(feature = "v4", not(feature = "ch585-v3c")),
+        not(any(
+            feature = "v2",
+            feature = "v3",
+            feature = "v4",
+            feature = "ch585-v3c"
+        ))     // Fallback condition
     ))]
     unsafe {
         #[cfg(feature = "u-mode")]

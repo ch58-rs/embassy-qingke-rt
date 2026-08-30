@@ -31,6 +31,9 @@ readme = "README.md"
 v2 = ["qingke/v2"]
 v3 = ["qingke/v3"]
 v4 = ["qingke/v4"]
+# CH585 uses QingKe V3C and requires startup CSRs not covered by the generic
+# V3A path.
+ch585-v3c = ["qingke/v3"]
 
 u-mode = []
 # v5 is not released yet

@@ -192,7 +192,13 @@ unsafe extern "C" fn qingke_setup_interrupts() {
             csrs mstatus, t0
             "
         );
-        qingke::register::gintenr::set_enable();
+        core::arch::asm!(
+            "csrs 0x800, {mask}",
+            "nop",
+            "nop",
+            mask = in(reg) 0x08usize,
+            options(nostack),
+        );
     }
 
     // Qingke V2's mtvec must be 1KB aligned.
@@ -204,7 +210,12 @@ unsafe extern "C" fn qingke_setup_interrupts() {
         #[cfg(not(feature = "highcode"))]
         mtvec::write(0x00000000, TrapMode::VectoredAddress);
 
-        qingke::pfic::wfi_to_wfe(true);
+        // Interrupts are still disabled during reset setup. Perform the PFIC
+        // SCTLR read-modify-write directly so the application can provide the
+        // sole critical-section implementation.
+        const PFIC_SCTLR: *mut u32 = 0xE000_ED10 as *mut u32;
+        let value = core::ptr::read_volatile(PFIC_SCTLR);
+        core::ptr::write_volatile(PFIC_SCTLR, value | 0x08);
     }
 }
 

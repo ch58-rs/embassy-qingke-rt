@@ -40,7 +40,7 @@ highcode = []
 
 [dependencies]
 qingke-rt-macros = {  version = "0.6.1", path = "./macros" }
-qingke = { version = "0.6.1", features = ["critical-section-impl"] }
+qingke = "0.6.1"
 
 [package.metadata.docs.rs]
 targets = ["riscv32imc-unknown-none-elf"]

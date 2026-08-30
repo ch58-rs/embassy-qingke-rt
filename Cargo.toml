@@ -1,3 +1,17 @@
+[workspace]
+members = ["macros"]
+resolver = "2"
+
+[workspace.package]
+authors = ["Andelf <andelf@gmail.com>"]
+repository = "https://github.com/ch58-rs/embassy-qingke-rt"
+documentation = "https://docs.rs/qingke-rt"
+homepage = "https://github.com/ch58-rs/embassy-qingke-rt"
+categories = ["embedded", "no-std", "hardware-support"]
+license = "MIT OR Apache-2.0"
+version = "0.6.1"
+edition = "2024"
+
 [package]
 name = "qingke-rt"
 version.workspace = true
@@ -26,7 +40,7 @@ highcode = []
 
 [dependencies]
 qingke-rt-macros = {  version = "0.6.1", path = "./macros" }
-qingke = { version = "0.6.1", path = "../", features = ["critical-section-impl"] }
+qingke = { version = "0.6.1", features = ["critical-section-impl"] }
 
 [package.metadata.docs.rs]
 targets = ["riscv32imc-unknown-none-elf"]

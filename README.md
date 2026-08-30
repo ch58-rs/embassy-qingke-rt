@@ -4,6 +4,13 @@ Replaces `ch32v-rt` as the name is not suitable for publishing.
 
 QingKe is the name of the RISC-V core.
 
+This repository preserves the upstream `qingke-rt` history and carries a
+small set of runtime changes:
+
+- allow an application to own the `critical-section` implementation;
+- preserve the required CH58x global-interrupt enable state;
+- initialize the QingKe V3C core used by CH585.
+
 ## Usage
 
 ```rust

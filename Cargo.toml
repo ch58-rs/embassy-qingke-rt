@@ -1,13 +1,27 @@
-[package]
-name = "qingke-rt"
-version = "0.6.1"
-edition = "2024"
+[workspace]
+members = ["macros"]
+resolver = "2"
+
+[workspace.package]
 authors = ["Andelf <andelf@gmail.com>"]
 repository = "https://github.com/ch58-rs/embassy-qingke-rt"
 documentation = "https://docs.rs/qingke-rt"
 homepage = "https://github.com/ch58-rs/embassy-qingke-rt"
 categories = ["embedded", "no-std", "hardware-support"]
 license = "MIT OR Apache-2.0"
+version = "0.6.1"
+edition = "2024"
+
+[package]
+name = "qingke-rt"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
+documentation.workspace = true
+homepage.workspace = true
+categories.workspace = true
+license.workspace = true
 description = "Minimal runtime / startup for WCH's RISC-V MCUs, managed by the ch32-rs team"
 keywords = ["qingke", "wch", "riscv", "ch32v"]
 readme = "README.md"
@@ -28,7 +42,7 @@ u-mode = []
 highcode = []
 
 [dependencies]
-qingke-rt-macros = "0.6.1"
+qingke-rt-macros = {  version = "0.6.1", path = "./macros" }
 qingke = "0.6.1"
 
 [package.metadata.docs.rs]

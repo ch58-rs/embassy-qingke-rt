@@ -196,7 +196,7 @@ unsafe extern "C" fn qingke_setup_interrupts() {
             "csrs 0x800, {mask}",
             "nop",
             "nop",
-            mask = in(reg) 0x08usize,
+            mask = in(reg) 0x88usize,
             options(nostack),
         );
     }
